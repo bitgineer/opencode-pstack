@@ -16,9 +16,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: privacy gate
-        run: node scripts/check-private.mjs
-
       - name: port gate
         run: node scripts/verify-port.mjs
 

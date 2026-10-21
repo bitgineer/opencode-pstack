@@ -11,8 +11,8 @@ port.
 
 - **56 skills** under `skills/pstack/<name>/SKILL.md`, with their playbooks, references, and
   scripts.
-- **23 subagents** under `agents/pstack/<role>.md`: 21 role seats plus `poteto-agent` and
-  `comment-sicko`.
+- **23 subagents** under `agents/pstack/<role>.md`, every one `mode: subagent` with its own
+  `model:` line.
 - **56 commands**, one per skill, under `commands/pstack/<name>.md`, typed as `/pstack/<name>`.
 - `pstack-docs/`, the installed guide and the OpenCode adapter.
 
@@ -114,52 +114,24 @@ in the installed copy.
 | `install` | the installed copy has all 56 skills, 23 agents, 56 commands |
 | `collision` | no other installed skill claims a pstack skill ID |
 
-`node scripts/check-private.mjs` is the publish gate, separate from the checks above. It scans
-the tree with 11 rules — home paths, emails, session ids, credential prefixes, a provider account
-alias, vendor model ids, hostnames, tailnet names, private IPs and personal handles — prints every
-hit as `path:line  [rule]  what`, and exits 1 on any hit. False positives live in
-`scripts/private-allowlist.txt`, one entry per quoted string with the reason it is evidence rather
-than private data. It skips `cursor-plugins/`, `bin-v2/`, `node_modules/` and `.git/`, so it means
-the same thing on a fresh clone.
+Both gates are reproducible from a clean clone:
 
-Proven live on OpenCode v2.1.1 with the standalone binary, not inferred from the files:
+```bash
+node scripts/install.mjs --dest /tmp/oc
+node scripts/verify-port.mjs --dest /tmp/oc          # 10 checks passed, 0 failed
+node scripts/install.mjs --check --dest /tmp/oc      # check: install matches the port
+```
 
-- `opencode debug agents` reports 23 `pstack/` IDs, all `subagent`, and no flat `pstack-*` IDs.
-- The model loads a skill by bare ID: `→ Skill "unslop"`.
-- `/pstack/bro` reaches the `bro` skill through the command endpoint.
-- `pstack/poteto-agent` spawns a real child session, recorded in the session store.
-- A `model:` line on a role agent routes the child run to that provider/model.
+`docs/AGENT-INSTALL.md` is the same procedure as a runbook: preconditions, the destination
+decision, the exact output each gate prints, the live smoke checks (`debug agents`, a skill load
+by bare ID, and `/pstack/<name>` through the command endpoint), the failure table, and a report
+template. Every claim on this page can be reproduced with a v2 `opencode` binary and the commands
+above.
 
-The static gate reported `10 checks passed, 0 failed` and `install.mjs --check` reported
-`check: install matches the port` after a clean install. The ported scripts match the upstream
-test baseline, 63 pass / 5 fail: five `Store` tests fail the same way upstream, two by timeout and
-three because the test machine has a real `gh` and no `origin` executable.
+## Re-porting
 
-Evidence and method: [`docs/VERIFICATION.md`](docs/VERIFICATION.md) has the raw runs,
-[`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) has the porting and review process.
-
-## Updating from upstream
-
-The pipeline is mechanical first, prose second, and it runs in this order:
-
-1. Copy the upstream skills flat and prefixed, `pstack-<name>/`, as the rewrite input.
-2. Run `tools/port-rewrite.py`: paths, tool names, subagent fields, and skill IDs. It prints
-   what it could not decide.
-3. Run `tools/regroup.py`: `pstack-<name>/` becomes `skills/pstack/<name>/`, and the prefix
-   drops from every ID and reference.
-4. Run `node tools/gen-artifacts.mjs`: regenerate the role agents, the 56 commands, and the role
-   table. Outputs are rewritten whole, so re-runs are idempotent.
-5. Rewrite the prose the mechanical pass left behind, following `tools/rewrite-brief.md`.
-6. Reinstall and gate:
-
-   ```bash
-   node scripts/install.mjs
-   node scripts/verify-port.mjs
-   node scripts/install.mjs --check
-   ```
-
-Anything the rewrite reports as leftover is a prose decision, not a script fix. The `cursor-name`
-check exists to catch what step 5 misses.
+Upstream changes are re-ported and the artifacts regenerated with the pipeline in the private
+`opencode-pstack-maintainers` repository. This repository ships only the ported result.
 
 ## Provenance
 

@@ -59,15 +59,7 @@ Notes:
 
 - **Global destination on Windows** is `%USERPROFILE%\.config\opencode`, not `%APPDATA%`. The
   installer builds it from the home directory on every platform.
-- **git-bash / MSYS on Windows:** a native OpenCode binary can reject an MSYS working directory.
-  If a subcommand fails with a path or cwd error, re-run it from the directory with a
-  Windows-style `PWD`:
-
-  ```bash
-  cd <repo>
-  env PWD='<repo>' "$OC" debug agents
-  ```
-
+- **git-bash / MSYS on Windows:** if a native OpenCode binary rejects the working directory, run the same command as `env PWD='<repo>' "$OC" <args>`.
 - Paths in this page: `<repo>` is the clone root, `<config>` is the OpenCode config directory the
   install targets, `~/` is your home directory.
 
@@ -82,9 +74,7 @@ ls scripts/install.mjs scripts/verify-port.mjs
 Expected: both paths printed, exit 0.
 
 The installable tree is at the repo root: `skills/pstack/<name>/SKILL.md`,
-`agents/pstack/<role>.md`, `commands/pstack/<name>.md`, and `pstack-docs/`. `bin-v2/` and
-`cursor-plugins/` are gitignored working directories; a fresh clone will not have them and
-nothing below needs them.
+`agents/pstack/<role>.md`, `commands/pstack/<name>.md`, and `pstack-docs/`.
 
 The scripts resolve the repo root from their own location, so they work from any working
 directory. Only `--project` depends on where you are: it targets `./.opencode` in the **current**
