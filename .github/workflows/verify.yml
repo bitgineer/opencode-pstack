@@ -1,0 +1,32 @@
+name: verify
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: privacy gate
+        run: node scripts/check-private.mjs
+
+      - name: port gate
+        run: node scripts/verify-port.mjs
+
+      # Prove the install works from a clean tree, then check the copy it wrote.
+      - name: clean install proof
+        run: |
+          set -euo pipefail
+          D=$(mktemp -d)
+          node scripts/install.mjs --dest "$D"
+          node scripts/install.mjs --check --dest "$D"
+          node scripts/verify-port.mjs --dest "$D"
