@@ -4,8 +4,12 @@ node_modules/
 # Local scratch work
 .work/
 
-# Local artifacts: archives and OS metadata
+# Local artifacts: archives, compiled binaries, OS metadata
 *.zip
+*.exe
+*.dll
+*.so
+*.dylib
 __pycache__/
 .DS_Store
 Thumbs.db
