@@ -1,4 +1,11 @@
-cursor-plugins/
-bin-v2/
+# Dependencies
 node_modules/
+
+# Local scratch work
+.work/
+
+# Local artifacts: archives and OS metadata
+*.zip
 __pycache__/
+.DS_Store
+Thumbs.db
